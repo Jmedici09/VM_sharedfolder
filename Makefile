@@ -12,8 +12,8 @@ SYS_CLOCK = 48000000L
 LINKSCRIPT=baremetal/mkl25z4.ld 
 
 DEBUG_OPTS = -g3 -gdwarf-2 -gstrict-dwarf
-OPTS = -O2 "-DSYS_CLOCK=$(SYS_CLOCK)" -DRESET_PIN_DISABLED
-#OPTS = -O2 "-DSYS_CLOCK=$(SYS_CLOCK)" -DRESET_PIN_DISABLED -DWATCHDOG_DISABLE
+#OPTS = -O2 "-DSYS_CLOCK=$(SYS_CLOCK)" -DRESET_PIN_DISABLED
+OPTS = -O2 "-DSYS_CLOCK=$(SYS_CLOCK)" -DRESET_PIN_DISABLED -DWATCHDOG_DISABLE
 TARGET = cortex-m0
 CFLAGS = -ffreestanding -nodefaultlibs -nostartfiles \
 	 -ffunction-sections -fdata-sections -Wall \

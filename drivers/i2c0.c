@@ -18,6 +18,7 @@ static void i2c0_wait_for_transmission_to_complete();
 static void  i2c0_put_byte( uint8_t data );
 static uint8_t  i2c0_get_byte();
 
+static void i2c0_nack_after_recieved_byte();
 
 void initialize_i2c0()
 {
@@ -30,15 +31,13 @@ void initialize_i2c0()
 	
 	I2C0->F = I2C_F_ICR(15)  | I2C_F_MULT(0);
 	
-	I2C0->C2 |= I2C_C2_HDRS_MASK;
+	//I2C0->C2 |= I2C_C2_HDRS_MASK;
 	I2C0->C1 |= I2C_C1_IICEN_MASK;
 	
 }
 
-_Bool i2c0_read_byte(uint8_t device, uint8_t reg, uint8_t *data)
+uint8_t i2c0_read_byte(uint8_t device, uint8_t reg)
 {
-	//uint8_t data;
-	
 	while( i2c0_is_busy() ) // necessary for back to back transmissions
 	i2c0_config_tx_mode();
 	i2c0_do_start();
@@ -49,27 +48,27 @@ _Bool i2c0_read_byte(uint8_t device, uint8_t reg, uint8_t *data)
 	//		goto END
 	i2c0_put_byte( reg );
 	i2c0_wait_for_transmission_to_complete();// Better as non-blocking
-	// TOD check for ACk
+	// TODO check for ACk
 	i2c0_do_repeat_start(); // this is a restart
 	i2c0_put_byte( device | 0x01 );
 	i2c0_wait_for_transmission_to_complete();// Better as non-blocking
-	// TOD check for ACk
+	// TODO check for ACk
 	i2c0_config_rx_mode();
-	*data = i2c0_get_byte();
-	i2c0_nack_recieved_byte();
+	i2c0_get_byte();
+	i2c0_nack_after_recieved_byte();
 	i2c0_wait_for_transmission_to_complete(); // Better as non-blocking
-	
+	// TODO check for ACk
 	i2c0_config_tx_mode();
 	i2c0_do_stop();
 	
+	return i2c0_get_byte();
 	
-	//return data;
-	//return i2c0_get_byte();
-	return true;
+	//data = i2c0_get_byte();
+	//return true;
 	
-END: // i2c0_config_tx_mode();
-	// i2c0_do_stop();
-	//return false;
+END:  i2c0_config_tx_mode();
+	 i2c0_do_stop();
+	return false;
 	
 }
 _Bool i2c0_write_byte(uint8_t device, uint8_t reg, uint8_t data)
@@ -85,15 +84,17 @@ _Bool i2c0_write_byte(uint8_t device, uint8_t reg, uint8_t data)
 	i2c0_put_byte( reg );
 	i2c0_wait_for_transmission_to_complete(); // Better as non-blocking
 	// TOD check for ACk
-	i2c0_put_byte( device | 0x01 );
+	//i2c0_put_byte( device | 0x01 );
+	i2c0_put_byte( data );
 	i2c0_wait_for_transmission_to_complete();// Better as non-blocking
 	// TOD check for ACk
+	i2c0_do_stop();
 	
 	return true;
 	
-END: // i2c0_config_tx_mode();
-	// i2c0_do_stop();
-	//return false;
+END:  i2c0_config_tx_mode();
+	 i2c0_do_stop();
+	return false;
 	
 }
 
@@ -128,12 +129,12 @@ static _Bool i2c0_is_busy()
 static _Bool i2c0_last_transfer_is_complete()
 {
 	//return I2C0->S & I2C_S_TCF_MASK;
-	return (I2C0->S & I2C_S_TCF_MASK); // change this
+	return (I2C0->S & I2C_S_IICIF_MASK); // change this
 }
 static void i2c0_wait_for_transmission_to_complete() // add this
 {
-	i2c0_last_transfer_is_complete();
-	// clear flag
+	while( !i2c0_last_transfer_is_complete());
+	I2C0->S |= I2C_S_IICIF_MASK;
 }
 
 static void  i2c0_put_byte( uint8_t data )
@@ -143,4 +144,9 @@ static void  i2c0_put_byte( uint8_t data )
 static uint8_t  i2c0_get_byte()
 {
 	return I2C0->D;
+}
+
+static void i2c0_nack_after_recieved_byte()
+{
+	I2C0->C1 |= I2C_C1_TXAK_MASK;
 }
