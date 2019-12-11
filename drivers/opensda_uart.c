@@ -50,4 +50,13 @@ _Bool opensda_uart_tx_ready()
 	return UART0->S1 & UART_S1_TDRE_MASK;
 }
 
-
+void uart_blocking_send(char *payload)
+{
+	while(*payload)
+	{
+		while(!opensda_uart_tx_ready());
+		send_byte_to_opensda_uart(*payload);
+		payload++;
+	}
+	while(!opensda_uart_tx_ready());
+}

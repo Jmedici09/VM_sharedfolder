@@ -10,12 +10,24 @@ Driver for repurposed reset switch on Kinetis board
 
 void initialize_sw1()
 {
-
 	//configure sw1
 	SIM->SCGC5 |= SIM_SCGC5_PORTA_MASK;
 	PORTA->PCR[SW1] = (PORTA->PCR[SW1]&~(PORT_PCR_MUX_MASK|PORT_PCR_IRQC_MASK))
 				| PORT_PCR_MUX(1) | PORT_PCR_IRQC(0);
 	PTA->PDDR &= ~(1<<SW1);
+}
+
+void initialize_sw1_with_interrupts()
+{
+	//configure sw1
+	SIM->SCGC5 |= SIM_SCGC5_PORTA_MASK;
+	PORTA->PCR[SW1] = (PORTA->PCR[SW1]&~(PORT_PCR_MUX_MASK|PORT_PCR_IRQC_MASK))
+				| PORT_PCR_MUX(1) | PORT_PCR_IRQC(10);
+	PTA->PDDR &= ~(1<<SW1);
+	
+	// found in core_cm0plus.h and chapter 3.3.2
+	NVIC_EnableIRQ( 30 );
+	NVIC_SetPriority( 30 , 1 );
 }
 
 _Bool sw1_is_pressed()

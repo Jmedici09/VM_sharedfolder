@@ -1,7 +1,9 @@
-#include <i2c0.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <MKL25Z4.h>
+	#include <i2c0.h>
+	#include <stdbool.h>
+	#include <stdint.h>
+	#include <MKL25Z4.h>
+
+#include <rgbled.h>
 
 
 static void i2c0_do_start();
@@ -31,32 +33,39 @@ void initialize_i2c0()
 	
 	I2C0->F = I2C_F_ICR(15)  | I2C_F_MULT(0);
 	
-	//I2C0->C2 |= I2C_C2_HDRS_MASK;
+	I2C0->C2 |= I2C_C2_HDRS_MASK;
 	I2C0->C1 |= I2C_C1_IICEN_MASK;
 	
+	
+initialize_rgbled();	
 }
 
 uint8_t i2c0_read_byte(uint8_t device, uint8_t reg)
 {
 	while( i2c0_is_busy() ) // necessary for back to back transmissions
+set_led_to( BLACK );
 	i2c0_config_tx_mode();
 	i2c0_do_start();
 	i2c0_put_byte( device );
 	i2c0_wait_for_transmission_to_complete(); // Better as non-blocking
+set_led_to( BLACK );
 	// TODO check for ACK
 	// if( !i2c0_ack_recieved() )
 	//		goto END
 	i2c0_put_byte( reg );
 	i2c0_wait_for_transmission_to_complete();// Better as non-blocking
+set_led_to( BLACK );
 	// TODO check for ACk
 	i2c0_do_repeat_start(); // this is a restart
 	i2c0_put_byte( device | 0x01 );
 	i2c0_wait_for_transmission_to_complete();// Better as non-blocking
+set_led_to( BLACK );
 	// TODO check for ACk
 	i2c0_config_rx_mode();
 	i2c0_get_byte();
 	i2c0_nack_after_recieved_byte();
 	i2c0_wait_for_transmission_to_complete(); // Better as non-blocking
+set_led_to( BLACK );
 	// TODO check for ACk
 	i2c0_config_tx_mode();
 	i2c0_do_stop();
@@ -65,37 +74,41 @@ uint8_t i2c0_read_byte(uint8_t device, uint8_t reg)
 	
 	//data = i2c0_get_byte();
 	//return true;
-	
+	/* 
 END:  i2c0_config_tx_mode();
 	 i2c0_do_stop();
-	return false;
+	return false; */
 	
 }
 _Bool i2c0_write_byte(uint8_t device, uint8_t reg, uint8_t data)
 {
 	while( i2c0_is_busy() ) // necessary for back to back transmissions
+set_led_to( BLACK );
 	i2c0_config_tx_mode();
 	i2c0_do_start();
 	i2c0_put_byte( device );
 	i2c0_wait_for_transmission_to_complete(); // Better as non-blocking
+set_led_to( BLACK );
 	// TODO check for ACK
 	// if( !i2c0_ack_recieved() )
 	//		goto END
 	i2c0_put_byte( reg );
 	i2c0_wait_for_transmission_to_complete(); // Better as non-blocking
+set_led_to( BLACK );
 	// TOD check for ACk
 	//i2c0_put_byte( device | 0x01 );
 	i2c0_put_byte( data );
 	i2c0_wait_for_transmission_to_complete();// Better as non-blocking
+set_led_to( BLACK );
 	// TOD check for ACk
 	i2c0_do_stop();
 	
 	return true;
-	
+	/* 
 END:  i2c0_config_tx_mode();
 	 i2c0_do_stop();
 	return false;
-	
+	 */
 }
 
 

@@ -16,6 +16,7 @@ Driver for repurposed reset switch on Kinetis board
 #define debounce_time 10
 
 void initialize_sw1();
+void initialize_sw1_with_interrupts();
 
 _Bool sw1_is_pressed();
 _Bool sw1_is_not_pressed();
