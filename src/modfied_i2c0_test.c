@@ -87,7 +87,7 @@ void main()
 		{
 			xaccel = i2c0_read_byte( DEVICE , 0x01) << 8;
 			i2cdata  = xaccel >> 8;
-			NewVals = xaccel;
+			global_reading = xaccel;
 			i2cdata_hex[3] = 'G'; 
 			i2cdata_hex[2] = 'G'; 	
 			i2cdata_hex[3] = ((i2cdata & 0x0f) < 10) ? ((i2cdata & 0x0f) + '0') : ((i2cdata & 0x0f) - 10 + 'A');
@@ -137,6 +137,6 @@ static uint8_t reading_to_level(int16_t read){
 }
 
 void PORTA_IRQHandler(){
-	current_level = abs_sol(global_reading);
+	current_level = reading_to_level(global_reading);
 	PORTA->ISFR |= (1<<20);
 }
