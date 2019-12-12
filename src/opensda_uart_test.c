@@ -13,6 +13,7 @@ void main()
 			while(!opensda_uart_tx_ready());
 			send_byte_to_opensda_uart('\n');
 		}
+		
 		//send_byte_to_opensda_uart(data);
 	}
 }
